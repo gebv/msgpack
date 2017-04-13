@@ -171,7 +171,13 @@ func (d *Decoder) float64(c byte) (float64, error) {
 		return float64(n), err
 	}
 	if c != codes.Double {
-		return 0, fmt.Errorf("msgpack: invalid code %x decoding float64", c)
+		// for special cases
+		// decoding float64 as int64 from tarantool
+		i, err := d.int(c)
+		if err != nil {
+			return 0, fmt.Errorf("msgpack: invalid code %x decoding float64 as int64: %s", c, err)
+		}
+		return float64(i), nil
 	}
 	b, err := d.uint64()
 	if err != nil {

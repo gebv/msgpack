@@ -215,6 +215,30 @@ func (t *MsgpackTest) TestFloat64(c *C) {
 	c.Assert(math.IsNaN(out), Equals, true)
 }
 
+// For special cases
+// Decoding float64 as int from a tarantool
+func (t *MsgpackTest) TestFloat64AsInt64(c *C) {
+	table := []struct {
+		v int64
+	}{
+		{1},
+		{2},
+		{-1},
+		{-2},
+		{128},
+		{-128},
+		{math.MaxInt64},
+		{math.MinInt64},
+	}
+	for _, r := range table {
+		c.Assert(t.enc.EncodeInt64(r.v), IsNil)
+
+		var v float64
+		c.Assert(t.dec.Decode(&v), IsNil)
+		c.Assert(v, Equals, float64(r.v))
+	}
+}
+
 func (t *MsgpackTest) TestDecodeNil(c *C) {
 	c.Assert(t.dec.Decode(nil), NotNil)
 }
